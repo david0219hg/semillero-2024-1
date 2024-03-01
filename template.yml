@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  MyBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: semillero-bucket-2-2024-2
+  
+  MyLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: python3.10
+      CodeUri: ./src
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - S3ReadPolicy:
+            BucketName: arn:aws:s3:::semillero-bucket-2-2024-2
+      Events:
+          S3Event:
+            Type: S3
+            Properties:
+              Bucket: !Ref MyBucket
+              Events: s3:ObjectCreated:*
