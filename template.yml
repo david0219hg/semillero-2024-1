@@ -1,25 +1,32 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
+Globals:
+  Function:
+    Timeout: 30
+
 Resources:
-  MyBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: semillero-bucket-2-2024-2
-  
-  MyLambda:
+  FastAPIFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.handler
+      FunctionName: !Sub 'semillero-2024-1-backend-lambda'
+      CodeUri: ./controllers
+      Handler: main.handler
       Runtime: python3.10
-      CodeUri: ./src
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - S3ReadPolicy:
-            BucketName: arn:aws:s3:::semillero-bucket-2-2024-2
       Events:
-          S3Event:
-            Type: S3
-            Properties:
-              Bucket: !Ref MyBucket
-              Events: s3:ObjectCreated:*
+        HttpAny:
+          Type: Api
+          Properties:
+            Path: '/{proxy+}'
+            Method: any
+      Layers: 
+        - !Ref MyLayer
+      Policies: # use Policies property
+      - AWSLambdaBasicExecutionRole # allow writing logs to CloudWatch
+      - AWSLambdaRole # allow API Gateway to invoke your function
+  MyLayer:
+    Type: AWS::Serverless::LayerVersion # use AWS SAM layer version
+    Properties:
+      ContentUri: ./my_layer # use ContentUri property
+      CompatibleRuntimes:
+        - python3.10
