@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Timeout: 30
+Resources:
+  FastAPIFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: semillero-2024-1-backend-lambda
+      CodeUri: FastAPIFunction
+      Handler: main.handler
+      Runtime: python3.10
+      Events:
+        HttpAny:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+      Layers:
+      - Ref: MyLayer
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - AWSLambdaRole
+    Metadata:
+      SamResourceId: FastAPIFunction
+  MyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ..\..\my_layer
+      CompatibleRuntimes:
+      - python3.10
